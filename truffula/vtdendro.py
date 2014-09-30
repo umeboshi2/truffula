@@ -51,10 +51,11 @@ class VTDendroCollector(BaseCollector):
 
     def parse_tree_anchor(self, anchor):
         latin = anchor.select('em')[0].text.lower().split()
+        common = anchor.text.strip().split(anchor.select('em')[0].text)[1].strip().split('- ')[1]
         if len(latin) == 2:
             genus, species = latin
             href = anchor.get('href')
-            return dict(genus=genus, species=species, href=href)
+            return dict(genus=genus, species=species, href=href, common=common)
         else:
             print "Unexpected latin", latin
         
@@ -74,3 +75,10 @@ class VTDendroCollector(BaseCollector):
         anchors = self.get_tree_anchors()
         pages = [self.get_tree_page(a) for a in anchors]
         return pages
+
+    def add_trees(self):
+        for anchor in self.get_tree_anchors():
+            p = self.parse_tree_anchor(anchor)
+            if p is not None:
+                self.add_tree(p['href'], p['genus'], p['species'], p['common'])
+        

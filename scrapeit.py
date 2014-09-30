@@ -52,6 +52,49 @@ SPECIES_MISSPELLS = dict(
         acuminata='accuminata'))
 
 
+WIKIPEDIA_MISSING_SPECIES = dict(
+    abelia=['xgrandiflora'],
+    anisacanthus=['quadrifidus'],
+    baccharis=['pteronioides'],
+    bursera=['hindsiana'],
+    carya=['pallida'],
+    cercis=['orbiculata'],
+    corylopsis=['glabrescens', 'sinensis'],
+    cylindropuntia=['arbuscula'],
+    deutzia=['scabra'],
+    ebenopsis=['confinis'],
+    ericameria=['palmeri'],
+    erythrina=['corallodendron'],
+    eucalyptus=['torelliana'],
+    euonymus=['kiautschovicus'],
+    gelsemium=['rankinii'],
+    hamamelis=['xintermedia'],
+    ilex=['xattenuata', 'myrtifolia'],
+    jatropha=['cuneata'],
+    laburnum=['xwatereri'],
+    larix=['xmarschlinsii'],
+    lonicera=['xbella'],
+    lyonia=['ferruginea'],
+    lysiloma=['candidum', 'watsonii'],
+    magnolia=['xsoulangiana'],
+    nolina=['texana'],
+    opuntia=['rufida'],
+    paulownia=['fortunei'],
+    penstemon=['ellipticus'],
+    philadelphus=['pubescens', 'inodorus'],
+    photinia=['xfraseri'],
+    prunus=['xyedoensis'],
+    quercus=['margarettae', 'sinuata'],
+    rhododendron=['albiflorum', 'canescens'],
+    rhus=['lentii'],
+    ribes=['acerifolium', 'rotundifolium'],
+    smilax=['tamnoides'],
+    styrax=['japonicus'],
+    taxus=['xmedia'],
+    tilia=['petiolaris'],
+    viburnum=['dilatatum', 'xburkwoodii'],
+    )
+
 
 
 for genus in sc.trees:
@@ -92,7 +135,41 @@ for genus in sc.trees:
         if genus == 'magnolia' and species == 'accuminata':
             species = 'acuminata'
         wc.get_page(genus, species)
-        
 
+vc.get_tree_pages()
+vc.add_trees()
+
+trees = vc.trees.keys()
+for genus in trees:
+    if genus not in ['diplacus', 'pyrularia', 'buckleya',
+                     'pinckneya', 'xcupressocyparis']:
+        wc.get_genus_page(genus)
+    for species in vc.trees[genus]:
+        if genus in ['weigela', 'hypericum', 'gaylussacia', 'diplacus',
+                     'lippia', 'styphnolobium', 'musa', 'ephedra', 'gambelia',
+                     'citrus', 'cistus', 'ditrysinia', 'forsythia',
+                     'bougainvillea', 'callistemon', 'cotoneaster',
+                     'crataegus', 'malus', 'stewartia', 'xcupressocyparis']:
+            continue
+        skip_species = False
+        for key in WIKIPEDIA_MISSING_SPECIES:
+            if genus == key and species in WIKIPEDIA_MISSING_SPECIES[key]:
+                print "Skipping %s %s" % (genus, species)
+                skip_species = True
+                continue
+        if skip_species:
+            continue
+        if genus == 'morella':
+            genus = 'myrica'
+        if genus == 'pyrularia':
+            species = genus
+            genus = 'clermontia'
+        if genus == 'abies' and species == 'nordmannia':
+            species = 'nordmanniana'
+        if genus == 'heptacodium' and species == 'miconoides':
+            species = 'miconioides'
+            
+        wc.get_page(genus, species)
+        
 url = make_tree_url(url_prefix, 'carpinus', 'caroliniana')
 
