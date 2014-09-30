@@ -12,6 +12,7 @@ from truffula.basecollector import BaseCollector
 from truffula.cachecollector import BaseCacheCollector
 from truffula.silvicstoc import SilvicsToCCollector
 from truffula.wikipedia import WikiCollector
+from truffula.vtdendro import VTDendroCollector
 
 from truffula.database import Base, URI
 
@@ -36,6 +37,23 @@ cc = BaseCacheCollector()
 sc = SilvicsToCCollector()
 sc.get_link_info()
 wc = WikiCollector()
+vc = VTDendroCollector()
+
+GENUS_MISSPELLS = dict(manilkara='manikara')
+SPECIES_MISSPELLS = dict(
+    nyssa=dict(
+        sylvatica='silvatica'),
+    carya=dict(
+        myristiciformis='myristicformis',
+        illinoinensis='illinoesis'),
+    cedrela=dict(
+        odorata='ordota'),
+    magnolia=dict(
+        acuminata='accuminata'))
+
+
+
+
 for genus in sc.trees:
     if genus not in ['manikara']:
         #print "Getting genus %s" % genus

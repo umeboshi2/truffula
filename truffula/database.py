@@ -70,3 +70,16 @@ class URI(Base, SerialBase):
     created = Column(DateTime)
     updated = Column(DateTime)
 
+
+class Genus(Base, SerialBase):
+    __tablename__ = 'genus_list'
+    id = Column(Integer, primary_key=True)
+    name = Column(Unicode, unique=True)
+
+class Species(Base, SerialBase):
+    __tablename__ = 'species_table'
+    id = Column(Integer, primary_key=True)
+    name = Column(Unicode, unique=True)
+    genus_id = Column(Integer, ForeignKey('genus_list.id'))
+    
+                      
