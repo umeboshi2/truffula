@@ -12,7 +12,13 @@ from truffula.scrapers.silvicstoc import SilvicsToCCollector
 from truffula.scrapers.wikipedia import WikiCollector
 from truffula.scrapers.vtdendro import VTDendroCollector
 
+from truffula.scrapers.wikipedia import get_wikipedia_pages_for_vt
+from truffula.scrapers.wikipedia import get_wikipedia_pages_for_silvics
 from truffula.database import Base, URI
+from truffula.database import Genus, SpecName
+from truffula.database import Species, VTSpecies
+
+
 
 url_prefix = 'http://www.na.fs.fed.us/spfo/pubs/silvics_manual/volume_2/'
 
@@ -30,8 +36,6 @@ Session.configure(bind=engine)
 
 s = Session()
 
-sc = SilvicsToCCollector()
-wc = WikiCollector()
 vc = VTDendroCollector()
 
 GENUS_MISSPELLS = dict(manilkara='manikara')
@@ -46,127 +50,14 @@ SPECIES_MISSPELLS = dict(
     magnolia=dict(
         acuminata='accuminata'))
 
-
-WIKIPEDIA_MISSING_SPECIES = dict(
-    abelia=['xgrandiflora'],
-    anisacanthus=['quadrifidus'],
-    baccharis=['pteronioides'],
-    bursera=['hindsiana'],
-    carya=['pallida'],
-    cercis=['orbiculata'],
-    corylopsis=['glabrescens', 'sinensis'],
-    cylindropuntia=['arbuscula'],
-    deutzia=['scabra'],
-    ebenopsis=['confinis'],
-    ericameria=['palmeri'],
-    erythrina=['corallodendron'],
-    eucalyptus=['torelliana'],
-    euonymus=['kiautschovicus'],
-    gelsemium=['rankinii'],
-    hamamelis=['xintermedia'],
-    ilex=['xattenuata', 'myrtifolia'],
-    jatropha=['cuneata'],
-    laburnum=['xwatereri'],
-    larix=['xmarschlinsii'],
-    lonicera=['xbella'],
-    lyonia=['ferruginea'],
-    lysiloma=['candidum', 'watsonii'],
-    magnolia=['xsoulangiana'],
-    nolina=['texana'],
-    opuntia=['rufida'],
-    paulownia=['fortunei'],
-    penstemon=['ellipticus'],
-    philadelphus=['pubescens', 'inodorus'],
-    photinia=['xfraseri'],
-    populus=['populus'],
-    prunus=['xyedoensis'],
-    quercus=['margarettae', 'sinuata'],
-    rhododendron=['albiflorum', 'canescens'],
-    rhus=['lentii'],
-    ribes=['acerifolium', 'rotundifolium'],
-    smilax=['tamnoides'],
-    styrax=['japonicus'],
-    taxus=['xmedia'],
-    tilia=['petiolaris'],
-    viburnum=['dilatatum', 'xburkwoodii'],
-    )
-
-WIKIPEDIA_GENUS_ONLY = ['weigela', 'hypericum', 'gaylussacia', 'diplacus',
-                        'lippia', 'styphnolobium', 'musa', 'ephedra', 'gambelia',
-                        'citrus', 'cistus', 'ditrysinia', 'forsythia',
-                        'bougainvillea', 'callistemon', 'cotoneaster',
-                        'crataegus', 'malus', 'stewartia', 'xcupressocyparis',
-                        'casuarina']
-
-
 vc.get_tree_pages()
 vc.add_trees()
+get_wikipedia_pages_for_vt(vc.trees)
 
-trees = vc.trees.keys()
-for genus in trees:
-    if genus not in ['diplacus', 'pyrularia', 'buckleya',
-                     'pinckneya', 'xcupressocyparis']:
-        wc.get_genus_page(genus)
-    for species in vc.trees[genus]:
-        if genus in WIKIPEDIA_GENUS_ONLY:
-            continue
-        missing = WIKIPEDIA_MISSING_SPECIES
-        if genus in missing and species in missing[genus]:
-            print "Skipping %s %s" % (genus, species)
-            continue
-        if genus == 'morella':
-            genus = 'myrica'
-        if genus == 'pyrularia':
-            species = genus
-            genus = 'clermontia'
-        if genus == 'abies' and species == 'nordmannia':
-            species = 'nordmanniana'
-        if genus == 'heptacodium' and species == 'miconoides':
-            species = 'miconioides'
-            
-        wc.get_page(genus, species)
+print "Getting silvics info..."
+sc = SilvicsToCCollector()
+wc = WikiCollector()
 
 sc.get_link_info()
 
-for genus in sc.trees:
-    if genus not in ['manikara']:
-        #print "Getting genus %s" % genus
-        wc.get_genus_page(genus)
-    for species in sc.trees[genus]:
-        if species == 'nutallii':
-            species = 'texana'
-        # no wiki page for tabebuia heterophylla
-        if genus == 'tabebuia' and species == 'heterophylla':
-            continue
-        if genus == 'nyssa' and species == 'silvatica':
-            species = 'sylvatica'
-        if genus == 'casuarina':
-            print "Skipping Casuarina"
-            continue
-        if genus == 'populus' and species == 'populus':
-            print "Skipping Populus populus"
-            continue
-        if genus == 'castanopsis' and species == 'chrysophylla':
-            genus = 'chrysolepis'
-            print "Getting genus page for %s" % genus
-            wc.get_genus_page(genus)
-            print 'Getting Chrysolepis chrysophylla'
-            wc.get_page(genus, species)
-        if genus == 'manikara':
-            print "Getting sapodilla"
-            wc.get_page('manilkara', 'zapota')
-            continue
-        if genus == 'carya':
-            if species == 'myristicformis':
-                species = 'myristiciformis'
-            if species == 'illinoesis':
-                species = 'illinoinensis'
-        if genus == 'cedrela' and species == 'ordota':
-            species = 'odorata'
-        if genus == 'magnolia' and species == 'accuminata':
-            species = 'acuminata'
-        wc.get_page(genus, species)
-
-        
-url = make_tree_url(url_prefix, 'carpinus', 'caroliniana')
-
+get_wikipedia_pages_for_silvics(sc.trees)
