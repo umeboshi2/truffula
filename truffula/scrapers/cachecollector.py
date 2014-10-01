@@ -3,7 +3,7 @@ import cPickle as Pickle
 from datetime import datetime
 import uuid
 
-from truffula.basecollector import BaseCollector
+from .basecollector import BaseCollector
 
 def make_uuid_from_url(url):
     return uuid.uuid5(uuid.NAMESPACE_URL, bytes(url))

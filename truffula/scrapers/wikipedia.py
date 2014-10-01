@@ -4,8 +4,8 @@ import urlparse
 import mechanize
 from bs4 import BeautifulSoup
 
-from truffula.basecollector import BaseCollector
-from truffula.cachecollector import BaseCacheCollector
+from .basecollector import BaseCollector
+from .cachecollector import BaseCacheCollector
 
 url_prefix = 'http://en.wikipedia.org/wiki/'
 

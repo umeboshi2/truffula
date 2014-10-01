@@ -4,8 +4,8 @@ import urlparse
 import mechanize
 from bs4 import BeautifulSoup
 
-from truffula.basecollector import BaseCollector
-from truffula.cachecollector import BaseCacheCollector
+from .basecollector import BaseCollector
+from .cachecollector import BaseCacheCollector
 
 
 url_prefix = 'http://dendro.cnre.vt.edu/dendrology/'
@@ -27,7 +27,10 @@ class VTDendroCollector(BaseCollector):
         if genus not in self.trees:
             self.trees[genus] = dict()
         url = os.path.join(url_prefix, href)
-        data = dict(common=cname, url=url)
+        data = self._get_tree_page_by_url(url)
+        data['cname'] = cname
+        
+        #data = dict(common=cname, url=url)
         self.trees[genus][species] = data
         
         
@@ -64,7 +67,15 @@ class VTDendroCollector(BaseCollector):
     def get_tree_page(self, genus, species):
         url = self.trees[genus][species]['url']
         return self._get_tree_page_by_url(url)
-        
+
+    def _get_tree_info_from_page(self, soup):
+        tinytext_block = soup.select('.TinyText')[0]
+        info = dict()
+        for slabel in tinytext_block.select('strong'):
+            key = slabel.text.split(':')[0].lower()
+            value = unicode(slabel.next_sibling)
+            info[key] = value
+        return info
 
     def _get_tree_page_by_url(self, url, data=None):
         page = self.cache.get(url)
@@ -76,13 +87,8 @@ class VTDendroCollector(BaseCollector):
         #page['soup'] = BeautifulSoup(page['content'])
         soup = BeautifulSoup(page['content'])
         page['soup'] = soup
-        tinytext_block = soup.select('.TinyText')[0]
-        info = dict()
-        for slabel in tinytext_block.select('strong'):
-            key = slabel.text.split(':')[0].lower()
-            value = unicode(slabel.next_sibling)
-            info[key] = value
-        page['info'] = info
+        page['treeinfo'] = self._get_tree_info_from_page(soup)
+        page['id'] = int(url.split('ID=')[1])
         return page
         
     def _get_tree_page(self, anchor):

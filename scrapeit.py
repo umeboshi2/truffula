@@ -8,11 +8,9 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 
-from truffula.basecollector import BaseCollector
-from truffula.cachecollector import BaseCacheCollector
-from truffula.silvicstoc import SilvicsToCCollector
-from truffula.wikipedia import WikiCollector
-from truffula.vtdendro import VTDendroCollector
+from truffula.scrapers.silvicstoc import SilvicsToCCollector
+from truffula.scrapers.wikipedia import WikiCollector
+from truffula.scrapers.vtdendro import VTDendroCollector
 
 from truffula.database import Base, URI
 
@@ -31,8 +29,6 @@ Session = sessionmaker()
 Session.configure(bind=engine)
 
 s = Session()
-bc = BaseCollector()
-cc = BaseCacheCollector()
 
 sc = SilvicsToCCollector()
 wc = WikiCollector()

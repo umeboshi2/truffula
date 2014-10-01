@@ -20,24 +20,11 @@ Base = declarative_base()
 ## Data Types                     ##
 ####################################
 
+SimpleDescriptionType = Enum('flower', 'leaf', 'form', 'fruit',
+                             'bark', 'twig',
+                             name='simple_description_type_enum')
 
-FileType = Enum('agenda', 'minutes', 'attachment',
-                name='file_type_enum')
-
-AgendaItemType = Enum('presentation', 'policy', 'routine', 'unknown',
-                      name='agenda_item_type_enum')
-
-VoteType = Enum('Yea', 'Nay', 'Abstain', 'Absent', 'Present',
-                name='vote_type_enum')
-
-AgendaItemTypeMap = dict(V='presentation', VI='policy',
-                         VII='routine')
-
-
-CacheType = Enum('action', 'departments', 'item', 'meeting',
-                 'people', 'rss-2011', 'rss-2012', 'rss-2013',
-                 'rss-this-month',
-                 name='cache_type_enum')
+####################################
 
 class SerialBase(object):
     def serialize(self):
@@ -88,8 +75,6 @@ class Species(Base, SerialBase):
     spec_id = Column(Integer, ForeignKey('species_list.id'), primary_key=True)
     cname = Column(Unicode)
     
-
-
 class VTSpecies(Base, SerialBase):
     __tablename__ = 'vt_species_table'
     id = Column(Integer, primary_key=True)
