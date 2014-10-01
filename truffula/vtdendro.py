@@ -27,7 +27,8 @@ class VTDendroCollector(BaseCollector):
         if genus not in self.trees:
             self.trees[genus] = dict()
         url = os.path.join(url_prefix, href)
-        self.trees[genus][species] = cname
+        data = dict(common=cname, url=url)
+        self.trees[genus][species] = data
         
         
     def get_page(self):
@@ -60,20 +61,40 @@ class VTDendroCollector(BaseCollector):
             print "Unexpected latin", latin
         
 
-    def get_tree_page(self, anchor):
-        data = self.parse_tree_anchor(anchor)
-        url = os.path.join(url_prefix, anchor['href'])
+    def get_tree_page(self, genus, species):
+        url = self.trees[genus][species]['url']
+        return self._get_tree_page_by_url(url)
+        
+
+    def _get_tree_page_by_url(self, url, data=None):
         page = self.cache.get(url)
         if page is None:
             print 'GET_TREE_PAGE', data
             self.pagecollector.retrieve_page(url)
             self.cache.save(url, self.pagecollector)
             page = self.cache.get(url)
+        #page['soup'] = BeautifulSoup(page['content'])
+        soup = BeautifulSoup(page['content'])
+        page['soup'] = soup
+        tinytext_block = soup.select('.TinyText')[0]
+        info = dict()
+        for slabel in tinytext_block.select('strong'):
+            key = slabel.text.split(':')[0].lower()
+            value = unicode(slabel.next_sibling)
+            info[key] = value
+        page['info'] = info
         return page
+        
+    def _get_tree_page(self, anchor):
+        data = self.parse_tree_anchor(anchor)
+        url = os.path.join(url_prefix, anchor['href'])
+        return self._get_tree_page_by_url(url, data=data)
+        
         
     def get_tree_pages(self):
         anchors = self.get_tree_anchors()
-        pages = [self.get_tree_page(a) for a in anchors]
+        import random ; random.shuffle(anchors)
+        pages = [self._get_tree_page(a) for a in anchors]
         return pages
 
     def add_trees(self):

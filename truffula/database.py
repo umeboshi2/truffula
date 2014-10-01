@@ -76,10 +76,23 @@ class Genus(Base, SerialBase):
     id = Column(Integer, primary_key=True)
     name = Column(Unicode, unique=True)
 
-class Species(Base, SerialBase):
-    __tablename__ = 'species_table'
+class SpecName(Base, SerialBase):
+    __tablename__ = 'species_list'
     id = Column(Integer, primary_key=True)
     name = Column(Unicode, unique=True)
-    genus_id = Column(Integer, ForeignKey('genus_list.id'))
     
-                      
+
+class Species(Base, SerialBase):
+    __tablename__ = 'species_table'
+    genus_id = Column(Integer, ForeignKey('genus_list.id'), primary_key=True)
+    spec_id = Column(Integer, ForeignKey('species_list.id'), primary_key=True)
+    cname = Column(Unicode)
+    
+
+
+class VTSpecies(Base, SerialBase):
+    __tablename__ = 'vt_species_table'
+    id = Column(Integer, primary_key=True)
+    genus_id = Column(Integer, ForeignKey('genus_list.id'))
+    spec_id = Column(Integer, ForeignKey('species_list.id'))
+    
