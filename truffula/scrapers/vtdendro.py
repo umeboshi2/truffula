@@ -73,7 +73,7 @@ class VTDendroCollector(BaseCollector):
         info = dict()
         for slabel in tinytext_block.select('strong'):
             key = slabel.text.split(':')[0].lower()
-            value = unicode(slabel.next_sibling)
+            value = unicode(slabel.next_sibling).strip()
             info[key] = value
         return info
 

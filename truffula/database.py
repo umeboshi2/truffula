@@ -88,5 +88,11 @@ class VTSpecies(Base, SerialBase):
     genus_id = Column(Integer, ForeignKey('genus_list.id'))
     spec_id = Column(Integer, ForeignKey('species_list.id'))
     cname = Column(Unicode)
+    flower = Column(Unicode)
+    leaf = Column(Unicode)
+    form = Column(Unicode)
+    fruit = Column(Unicode)
+    bark = Column(Unicode)
+    twig = Column(Unicode)
     data = Column(PickleType)
     

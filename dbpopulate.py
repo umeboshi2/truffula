@@ -74,6 +74,8 @@ for genus in vc.trees:
             if 'soup' in data:
                 del data['soup']
             sp.cname = data['cname']
+            for key, value in data['treeinfo'].items():
+                setattr(sp, key, value)
             sp.data = data
             s.add(sp)
             #s.commit()
