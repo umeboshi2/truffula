@@ -69,12 +69,28 @@ class VTDendroCollector(BaseCollector):
         return self._get_tree_page_by_url(url)
 
     def _get_tree_info_from_page(self, soup):
-        tinytext_block = soup.select('.TinyText')[0]
-        info = dict()
+        symbol = soup.select('span.BigText')[0].text.split('symbol:')[1].strip()
+        if symbol == '--':
+            symbol = None
+        tinytext_selection = soup.select('.TinyText')
+        tinytext_block = tinytext_selection[0]
+        info = dict(symbol=symbol)
         for slabel in tinytext_block.select('strong'):
             key = slabel.text.split(':')[0].lower()
             value = unicode(slabel.next_sibling).strip()
             info[key] = value
+        info['lookslike'] = list()
+        try:
+            looks_like_element = tinytext_block.next_sibling.next_sibling
+        except AttributeError:
+            return info
+        if looks_like_element is None:
+            return info
+        if looks_like_element.text == 'Looks like:':
+            for anchor in tinytext_block.parent.select('a'):
+                href = anchor.get('href')
+                llid = int(href.split('ID=')[1])
+                info['lookslike'].append(llid)
         return info
 
     def _get_tree_page_by_url(self, url, data=None):
