@@ -12,6 +12,7 @@ url_prefix = 'http://dendro.cnre.vt.edu/dendrology/'
 
 toc_url = 'http://dendro.cnre.vt.edu/dendrology/data_results_with_common.cfm'
 
+PICTURE_KEYS = ['flower', 'leaf', 'form', 'fruit', 'bark', 'twig', 'map']
 
 class VTDendroCollector(BaseCollector):
     def __init__(self, cachedir='data'):
@@ -91,6 +92,15 @@ class VTDendroCollector(BaseCollector):
                 href = anchor.get('href')
                 llid = int(href.split('ID=')[1])
                 info['lookslike'].append(llid)
+        pictures = dict()
+        image_elements = soup.select('img')
+        for element in image_elements:
+            src = element.get('src')
+            if src.startswith('../images/'):
+                key = element.get('alt')
+                if key in PICTURE_KEYS:
+                    pictures[key] = src
+        info['pictures'] = pictures
         return info
 
     def _get_tree_page_by_url(self, url, data=None):

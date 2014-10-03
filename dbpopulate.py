@@ -17,6 +17,7 @@ from truffula.scrapers.wikipedia import get_wikipedia_pages_for_silvics
 from truffula.database import Base, URI
 from truffula.database import Genus, SpecName
 from truffula.database import Species, VTSpecies
+from truffula.database import VTLooksLike
 
 
 
@@ -66,7 +67,8 @@ for genus in vc.trees:
         if sp is None:
             print data['treeinfo']
             sp = VTSpecies()
-            sp.id = data['id']
+            spec_id = data['id']
+            sp.id = spec_id
             g = s.query(Genus).filter_by(name=genus).one()
             sn = s.query(SpecName).filter_by(name=species).one()
             sp.genus_id = g.id
@@ -74,8 +76,16 @@ for genus in vc.trees:
             if 'soup' in data:
                 del data['soup']
             sp.cname = data['cname']
-            for key, value in data['treeinfo'].items():
+            treeinfo = data['treeinfo']
+            for key, value in treeinfo.items():
                 setattr(sp, key, value)
+            for like_id in treeinfo['lookslike']:
+                ll = s.query(VTLooksLike).get((spec_id, like_id))
+                if ll is None:
+                    ll = VTLooksLike()
+                    ll.spec_id = spec_id
+                    ll.like_id = like_id
+                    s.add(ll)
             sp.data = data
             s.add(sp)
             #s.commit()

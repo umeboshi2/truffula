@@ -24,6 +24,10 @@ SimpleDescriptionType = Enum('flower', 'leaf', 'form', 'fruit',
                              'bark', 'twig',
                              name='simple_description_type_enum')
 
+VTPictureType = Enum('flower', 'leaf', 'form', 'fruit',
+                             'bark', 'twig', 'map',
+                             name='simple_description_type_enum')
+
 ####################################
 
 class SerialBase(object):
@@ -81,7 +85,7 @@ class SimpleDescription(Base, SerialBase):
     type = Column(SimpleDescriptionType)
     text = Column(Unicode)
     
-    
+
 class VTSpecies(Base, SerialBase):
     __tablename__ = 'vt_species_table'
     id = Column(Integer, primary_key=True)
@@ -97,3 +101,16 @@ class VTSpecies(Base, SerialBase):
     twig = Column(Unicode)
     data = Column(PickleType)
     
+class VTLooksLike(Base, SerialBase):
+    __tablename__ = 'vt_looks_likes'
+    spec_id = Column(Integer, ForeignKey('vt_species_table.id'), primary_key=True)
+    like_id = Column(Integer, ForeignKey('vt_species_table.id'), primary_key=True)
+
+class VTPicture(Base, SerialBase):
+    __tablename__ = 'vt_pictures'
+    id = Column(Integer, ForeignKey('vt_species_table.id'), primary_key=True)
+    type = Column(VTPictureType, primary_key=True)
+    text = Column(Unicode)
+    
+
+#VTSpecies.like = relationship('vt_looks_likes.spec_id')
