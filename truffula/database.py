@@ -100,7 +100,8 @@ class VTSpecies(Base, SerialBase):
     bark = Column(Unicode)
     twig = Column(Unicode)
     data = Column(PickleType)
-    
+    #lookslike = relationship(
+        
 class VTLooksLike(Base, SerialBase):
     __tablename__ = 'vt_looks_likes'
     spec_id = Column(Integer, ForeignKey('vt_species_table.id'), primary_key=True)
@@ -110,7 +111,13 @@ class VTPicture(Base, SerialBase):
     __tablename__ = 'vt_pictures'
     id = Column(Integer, ForeignKey('vt_species_table.id'), primary_key=True)
     type = Column(VTPictureType, primary_key=True)
-    text = Column(Unicode)
+    #text = Column(Unicode)
+    url = Column(Unicode)
     
 
 #VTSpecies.like = relationship('vt_looks_likes.spec_id')
+from sqlalchemy.orm.collections import attribute_mapped_collection
+
+VTSpecies.pictures = relationship(
+    VTPicture,
+    collection_class=attribute_mapped_collection('type'))

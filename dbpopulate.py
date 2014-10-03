@@ -10,14 +10,14 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from truffula.scrapers.silvicstoc import SilvicsToCCollector
 from truffula.scrapers.wikipedia import WikiCollector
-from truffula.scrapers.vtdendro import VTDendroCollector
+from truffula.scrapers.vtdendro import VTDendroCollector, TREEINFO_KEYS
 
 from truffula.scrapers.wikipedia import get_wikipedia_pages_for_vt
 from truffula.scrapers.wikipedia import get_wikipedia_pages_for_silvics
 from truffula.database import Base, URI
 from truffula.database import Genus, SpecName
 from truffula.database import Species, VTSpecies
-from truffula.database import VTLooksLike
+from truffula.database import VTLooksLike, VTPicture
 
 
 
@@ -77,8 +77,9 @@ for genus in vc.trees:
                 del data['soup']
             sp.cname = data['cname']
             treeinfo = data['treeinfo']
-            for key, value in treeinfo.items():
-                setattr(sp, key, value)
+            for key in TREEINFO_KEYS:
+                if key in treeinfo:
+                    setattr(sp, key, treeinfo[key])
             for like_id in treeinfo['lookslike']:
                 ll = s.query(VTLooksLike).get((spec_id, like_id))
                 if ll is None:
@@ -86,6 +87,17 @@ for genus in vc.trees:
                     ll.spec_id = spec_id
                     ll.like_id = like_id
                     s.add(ll)
+            pix = treeinfo['pictures']
+            for ptype in pix:
+                px = s.query(VTPicture).get((spec_id, ptype))
+                if px is None:
+                    px = VTPicture()
+                    px.id = spec_id
+                    px.type = ptype
+                    px.url = pix[ptype]
+                    s.add(px)
+                    print "px.type", px.type, px.url
+            #import pdb ; pdb.set_trace()
             sp.data = data
             s.add(sp)
             #s.commit()

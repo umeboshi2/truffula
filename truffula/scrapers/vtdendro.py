@@ -1,7 +1,10 @@
 import os, sys
 import urlparse
+import multiprocessing
+from multiprocessing.pool import ThreadPool
 
 import mechanize
+import requests
 from bs4 import BeautifulSoup
 
 from .basecollector import BaseCollector
@@ -12,18 +15,78 @@ url_prefix = 'http://dendro.cnre.vt.edu/dendrology/'
 
 toc_url = 'http://dendro.cnre.vt.edu/dendrology/data_results_with_common.cfm'
 
-PICTURE_KEYS = ['flower', 'leaf', 'form', 'fruit', 'bark', 'twig', 'map']
+TREEINFO_KEYS = ['flower', 'leaf', 'form', 'fruit', 'bark', 'twig']
+PICTURE_KEYS = TREEINFO_KEYS + ['map']
+
+
+def chunks(l, n):
+    """ Yield successive n-sized chunks from l.
+    """
+    for i in xrange(0, len(l), n):
+        yield l[i:i+n]
+
+def download_picture(ptuple):
+    url, filename = ptuple
+    if not os.path.isfile(filename):
+        print "Downloading", filename
+        dirname = os.path.dirname(filename)
+        if not os.path.isdir(dirname):
+            os.makedirs(dirname)
+        r = requests.get(url)
+        if r.ok:
+            with file(filename, 'w') as outfile:
+                outfile.write(r.content)
+
+def download_pictures(paramlist, chunksize=20, processes=5):
+    grouped = chunks(paramlist, chunksize)
+    pool = ThreadPool(processes=processes)
+    count = 0
+    total = len(paramlist) / chunksize
+    if len(paramlist) % chunksize:
+        total += 1
+    for group in grouped:
+        output = pool.map(download_picture, group)
+        count += 1
+        print "Group %d of %d processed." % (count, total)
+        
 
 class VTDendroCollector(BaseCollector):
-    def __init__(self, cachedir='data'):
+    def __init__(self, cachedir='data', pictdir='images'):
         super(VTDendroCollector, self).__init__()
         self.cache = BaseCacheCollector(cachedir=cachedir)
         self.set_url(toc_url)
         self.soup = None
         self.trees = dict()
         self.pagecollector = BaseCollector()
+        self.pictdir = pictdir
         
 
+    def make_picture_filename(self, url):
+        marker = url_prefix + 'images/'
+        frag = url.split(marker)[1]
+        frag = frag.replace('%20', '_')
+        return os.path.join(self.pictdir, frag)
+
+    def _make_paramlist(self):
+        paramlist = list()
+        for genus in self.trees:
+            for species in self.trees[genus]:
+                treeinfo = self.trees[genus][species]['treeinfo']
+                for ptype, url in treeinfo['pictures'].items():
+                    filename = self.make_picture_filename(url)
+                    paramlist.append((url, filename))
+        return paramlist
+
+    def download_pictures(self):
+        paramlist = self._make_paramlist()
+        for url, filename in paramlist:
+            dirname = os.path.dirname(filename)
+            if not os.path.isdir(dirname):
+                os.makedirs(dirname)
+        download_pictures(paramlist)
+        
+        
+        
     def add_tree(self, href, genus, species, cname):
         if genus not in self.trees:
             self.trees[genus] = dict()
@@ -80,6 +143,19 @@ class VTDendroCollector(BaseCollector):
             key = slabel.text.split(':')[0].lower()
             value = unicode(slabel.next_sibling).strip()
             info[key] = value
+        pictures = dict()
+        image_elements = soup.select('img')
+        for element in image_elements:
+            src = element.get('src')
+            if src.startswith('../images/'):
+                key = element.get('alt')
+                if key in PICTURE_KEYS:
+                    # strip ../
+                    src = src[3:]
+                    picture_url = os.path.join(url_prefix, src)
+                    picture_url = picture_url.replace(' ', '%20')
+                    pictures[key] = picture_url
+        info['pictures'] = pictures
         info['lookslike'] = list()
         try:
             looks_like_element = tinytext_block.next_sibling.next_sibling
@@ -92,15 +168,6 @@ class VTDendroCollector(BaseCollector):
                 href = anchor.get('href')
                 llid = int(href.split('ID=')[1])
                 info['lookslike'].append(llid)
-        pictures = dict()
-        image_elements = soup.select('img')
-        for element in image_elements:
-            src = element.get('src')
-            if src.startswith('../images/'):
-                key = element.get('alt')
-                if key in PICTURE_KEYS:
-                    pictures[key] = src
-        info['pictures'] = pictures
         return info
 
     def _get_tree_page_by_url(self, url, data=None):
