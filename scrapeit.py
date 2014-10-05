@@ -34,3 +34,6 @@ wc = WikiCollector()
 sc.get_link_info()
 
 get_wikipedia_pages_for_silvics(sc.trees)
+
+print "Downloading Pictures"
+vc.download_pictures()
