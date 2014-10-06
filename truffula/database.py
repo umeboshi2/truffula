@@ -121,3 +121,8 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 VTSpecies.pictures = relationship(
     VTPicture,
     collection_class=attribute_mapped_collection('type'))
+
+VTSpecies.genus = relationship(Genus)
+VTSpecies.species = relationship(SpecName)
+
+    
