@@ -2,23 +2,36 @@ Beaker==1.6.4
 Mako==1.0.0
 MarkupSafe==0.23
 PasteDeploy==1.5.2
+Pillow==2.6.0
+Pygments==1.6
 SQLAlchemy==0.9.7
 WebOb==1.4
 argparse==1.2.1
 beautifulsoup4==4.3.2
 cornice==0.17
+icalendar==3.8.3
+lxml==3.4.0
 mechanize==0.2.5
 psycopg2==2.5.4
 pyramid==1.5.1
 pyramid-beaker==0.8
+pyramid-debugtoolbar==2.2
 pyramid-mako==1.0.2
 pyramid-tm==0.7
+python-dateutil==2.2
+pytz==2014.7
 repoze.lru==0.6
 requests==2.4.3
 simplejson==3.6.4
+six==1.8.0
 transaction==1.4.3
 translationstring==1.1
+-e git+git@github.com:umeboshi2/truffula.git@f0d0304fdbf1d9104e2d42484bee15954a3b33fe#egg=truffula-master
+-e git+git@github.com:umeboshi2/trumpet.git@141fba80cb134ab8f85f755e55a621874791590f#egg=trumpet-master
 venusian==1.0
+vobject==0.6.6
+waitress==0.8.9
+wheel==0.24.0
 wsgiref==0.1.2
 zope.deprecation==4.1.1
 zope.interface==4.1.1
