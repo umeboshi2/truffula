@@ -74,7 +74,11 @@ class VTSpeciesView(BaseResource):
         return data
         
     def collection_query(self):
-        return self.mgr.query()
+        query = self.mgr.query()
+        GET = self.request.GET
+        if 'genus_id' in GET:
+            query = query.filter_by(genus_id=int(GET['genus_id']))
+        return query
 
     def get(self):
         id = int(self.request.matchdict['id'])
