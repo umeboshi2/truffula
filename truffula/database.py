@@ -124,5 +124,9 @@ VTSpecies.pictures = relationship(
 
 VTSpecies.genus = relationship(Genus)
 VTSpecies.species = relationship(SpecName)
+VTSpecies.looklikes = relationship(VTSpecies,
+                                   secondary='vt_looks_likes',
+                                   primaryjoin=VTSpecies.id==VTLooksLike.spec_id,
+                                   secondaryjoin=VTSpecies.id==VTLooksLike.like_id)
 
     
