@@ -19,6 +19,16 @@ class BaseManager(object):
 class GenusManager(BaseManager):
     dbmodel = Genus
 
+    def get_by_name_query(self, name):
+        return self.query().filter_by(name=name)
+
+    def get_by_name(self, name):
+        q = self.get_by_name_query(name)
+        try:
+            return q.one()
+        except NoResultFound:
+            return None
+
 class SpecNameManager(BaseManager):
     dbmodel = SpecName
 

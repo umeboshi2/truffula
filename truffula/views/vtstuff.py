@@ -1,16 +1,24 @@
 import os
 from ConfigParser import ConfigParser
 from datetime import datetime
+from urllib2 import HTTPError
 
 from cornice.resource import resource, view
+from pyramid.httpexceptions import HTTPNotFound
+from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPForbidden
+from bs4 import BeautifulSoup
 
 from trumpet.views.rest.base import BaseResource
 
 from trumpet.models.usergroup import User
 
+from truffula.database import VTSpecies
 from truffula.managers.basic import GenusManager
 from truffula.managers.basic import SpecNameManager
 from truffula.managers.basic import VTSpeciesManager
+from truffula.scrapers.wikipedia import WikiCollector
+
 
 from truffula.scrapers.vtdendro import url_prefix
 
@@ -55,8 +63,12 @@ class VTSpeciesView(BaseResource):
         super(VTSpeciesView, self).__init__(request)
         self.mgr = VTSpeciesManager(self.db)
         self.limit = 25
-
+        self.genus_mgr = GenusManager(self.db)
+        self.wikicollector = WikiCollector()
+        
     def serialize_object(self, dbobj):
+        #import pdb ; pdb.set_trace()
+        
         data = dict()
         for field in ['id', 'genus_id', 'spec_id', 'cname', 'symbol',
                       'flower', 'leaf', 'form', 'fruit', 'bark', 'twig']:
@@ -69,15 +81,43 @@ class VTSpeciesView(BaseResource):
             ipath = value['url'].split(url_prefix)[1].replace('%20', '_')
             base = self.request.route_url('home')
             value['localurl'] = '%svt%s' % (base, ipath)
-            #import pdb ; pdb.set_trace()
             data['pictures'][key] = value
+        data['looklikes'] = [dict(id=l.id, cname=l.cname) for l in dbobj.looklikes]
+        try:
+            wikipage = self.wikicollector.get_page(dbobj.genus.name, dbobj.species.name)
+        except HTTPError, exception:
+            wikipage = dict(content='')
+        if 'info' in wikipage:
+            del wikipage['info']
+            content = wikipage['content']
+            soup = BeautifulSoup(content)
+            for cid in ['siteSub', 'contentSub', 'jump-to-nav',
+                        'firstHeading', 'mw-navigation']:
+                selector = '#%s' % cid
+                elements = soup.select(selector)
+                while len(elements):
+                    element = elements.pop()
+                    element.clear()
+            wikipage['content'] = bytes(soup.body)
+        data['wikipage'] = wikipage
         return data
         
     def collection_query(self):
         query = self.mgr.query()
         GET = self.request.GET
-        if 'genus_id' in GET:
-            query = query.filter_by(genus_id=int(GET['genus_id']))
+        if 'genus' in GET:
+            genus = self.genus_mgr.get_by_name(GET['genus'])
+            if genus is not None:
+                query = query.filter_by(genus_id=genus.id)
+            else:
+                raise HTTPNotFound, "No genus named %s" % GET['genus']
+        for field in ['cname', 'form', 'leaf', 'bark', 'fruit', 'flower', 'twig']:
+            if field in GET:
+                value = GET[field]
+                if value:
+                    like = '%' + value + '%'
+                    dbfield = getattr(VTSpecies, field)
+                    query = query.filter(dbfield.like(like))
         return query
 
     def get(self):
