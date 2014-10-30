@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 import os, sys
 import cPickle as Pickle
+from urllib2 import HTTPError
 
+from bs4 import BeautifulSoup
 from sqlalchemy import engine_from_config
 from sqlalchemy import and_, or_
 from sqlalchemy.orm import sessionmaker
@@ -14,6 +16,8 @@ from truffula.scrapers.vtdendro import VTDendroCollector, TREEINFO_KEYS
 
 from truffula.scrapers.wikipedia import get_wikipedia_pages_for_vt
 from truffula.scrapers.wikipedia import get_wikipedia_pages_for_silvics
+from truffula.scrapers.wikipedia import WikiCollector
+
 from truffula.database import Base, URI
 from truffula.database import Genus, SpecName
 from truffula.database import Species, VTSpecies
@@ -99,6 +103,22 @@ for genus in vc.trees:
                     print "px.type", px.type, px.url
             #import pdb ; pdb.set_trace()
             sp.data = data
+            collector = WikiCollector()
+            try:
+                wpage = collector.get_page(genus, species)
+            except HTTPError, e:
+                wpage = None
+            #print "WPAGE IS", wpage
+            if wpage is not None:
+                soup = BeautifulSoup(wpage['content'])
+                for cid in ['siteSub', 'contentSub', 'jump-to-nav',
+                            'firstHeading', 'mw-navigation', 'mw-hidden-catlinks']:
+                    selector = '#%s' % cid
+                    elements = soup.select(selector)
+                    while len(elements):
+                        element = elements.pop()
+                        element.clear()
+                sp.wikipage = unicode(soup.body)
             s.add(sp)
             #s.commit()
             

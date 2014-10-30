@@ -100,8 +100,8 @@ class VTSpecies(Base, SerialBase):
     bark = Column(Unicode)
     twig = Column(Unicode)
     data = Column(PickleType)
-    #lookslike = relationship(
-        
+    wikipage = Column(Unicode)
+    
 class VTLooksLike(Base, SerialBase):
     __tablename__ = 'vt_looks_likes'
     spec_id = Column(Integer, ForeignKey('vt_species_table.id'), primary_key=True)

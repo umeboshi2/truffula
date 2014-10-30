@@ -83,23 +83,7 @@ class VTSpeciesView(BaseResource):
             value['localurl'] = '%svt%s' % (base, ipath)
             data['pictures'][key] = value
         data['looklikes'] = [dict(id=l.id, cname=l.cname) for l in dbobj.looklikes]
-        try:
-            wikipage = self.wikicollector.get_page(dbobj.genus.name, dbobj.species.name)
-        except HTTPError, exception:
-            wikipage = dict(content='')
-        if 'info' in wikipage:
-            del wikipage['info']
-            content = wikipage['content']
-            soup = BeautifulSoup(content)
-            for cid in ['siteSub', 'contentSub', 'jump-to-nav',
-                        'firstHeading', 'mw-navigation']:
-                selector = '#%s' % cid
-                elements = soup.select(selector)
-                while len(elements):
-                    element = elements.pop()
-                    element.clear()
-            wikipage['content'] = bytes(soup.body)
-        data['wikipage'] = wikipage
+        data['wikipage'] = dbobj.wikipage
         return data
         
     def collection_query(self):
