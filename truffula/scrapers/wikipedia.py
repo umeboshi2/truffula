@@ -67,7 +67,7 @@ WIKIPEDIA_NO_GENUS = ['diplacus', 'pyrularia', 'buckleya',
 def cleanup_wiki_page(content):
     soup = BeautifulSoup(content)
     for cid in ['siteSub', 'contentSub', 'jump-to-nav', 'firstHeading',
-                'mw-navigation', 'nw-hidden-catlinks']:
+                'mw-navigation', 'mw-hidden-catlinks']:
         selector = '#%s' % cid
         elements = soup.select(selector)
         while len(elements):

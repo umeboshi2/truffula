@@ -26,7 +26,7 @@ SimpleDescriptionType = Enum('flower', 'leaf', 'form', 'fruit',
 
 VTPictureType = Enum('flower', 'leaf', 'form', 'fruit',
                              'bark', 'twig', 'map',
-                             name='simple_description_type_enum')
+                             name='vt_picture_type_enum')
 
 ####################################
 
