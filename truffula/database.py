@@ -119,7 +119,13 @@ class VTPicture(Base, SerialBase):
     #text = Column(Unicode)
     url = Column(Unicode)
     
-
+class WikiPage(Base, SerialBase):
+    __tablename__ = 'wiki_pages'
+    id = Column(Integer, primary_key=True)
+    name = Column(Unicode, unique=True)
+    title = Column(Unicode)
+    content = Column(Unicode)
+    
 #VTSpecies.like = relationship('vt_looks_likes.spec_id')
 from sqlalchemy.orm.collections import attribute_mapped_collection
 

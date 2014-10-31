@@ -63,16 +63,34 @@ WIKIPEDIA_MISSING_SPECIES = dict(
 
 WIKIPEDIA_NO_GENUS = ['diplacus', 'pyrularia', 'buckleya',
                       'pinckneya', 'xcupressocyparis']
+def clear_elements(soup, selector):
+    elements = soup.select(selector)
+    while len(elements):
+        element = elements.pop()
+        element.clear()
+        
 
 def cleanup_wiki_page(content):
     soup = BeautifulSoup(content)
     for cid in ['siteSub', 'contentSub', 'jump-to-nav', 'firstHeading',
-                'mw-navigation', 'mw-hidden-catlinks']:
+                'mw-navigation', 'mw-hidden-catlinks', 'footer-places',
+                'footer-icons']:
         selector = '#%s' % cid
-        elements = soup.select(selector)
-        while len(elements):
-            element = elements.pop()
-            element.clear()
+        clear_elements(soup, selector)
+    for classid in ['mw-editsection',]:
+        selector = '.%s' % classid
+        clear_elements(soup, selector)
+    anchors = soup.select('a')
+    for anchor in anchors:
+        if anchor.has_attr('href'):
+            href = anchor['href']
+            if href.startswith('/wiki'):
+                name = os.path.split(href)[1]
+                if '.' in name:
+                    ext = name.split('.')[-1]
+                    if ext in ['jpg', 'gif', 'png', 'jpeg']:
+                        continue
+                anchor['href'] = '#vtdendro/wikipage/%s' % name
     return soup
     
 class WikiCollector(BaseCollector):
@@ -101,6 +119,12 @@ class WikiCollector(BaseCollector):
     def get_genus_page(self, genus):
         url = os.path.join(url_prefix, genus.capitalize())
         return self._get_url(url)
+
+    def get_wiki_page(self, name):
+        url = os.path.join(url_prefix, name)
+        return self._get_url(url)
+        
+        
         
 
 

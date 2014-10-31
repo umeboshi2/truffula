@@ -59,6 +59,7 @@ def main(global_config, **settings):
         
     #config.scan()
     config.scan('truffula.views.vtstuff')
+    config.scan('truffula.views.wikipages')
 
     if 'default.vtimages.directory' in settings:
         vpath = settings['default.vtimages.directory']

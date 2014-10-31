@@ -4,6 +4,7 @@ import transaction
 
 from truffula.database import Genus, SpecName
 from truffula.database import VTSpecies
+from truffula.database import WikiPage
 
 
 class BaseManager(object):
@@ -16,9 +17,7 @@ class BaseManager(object):
     def get(self, id):
         return self.query().get(id)
 
-class GenusManager(BaseManager):
-    dbmodel = Genus
-
+class GetByNameManager(BaseManager):
     def get_by_name_query(self, name):
         return self.query().filter_by(name=name)
 
@@ -29,8 +28,16 @@ class GenusManager(BaseManager):
         except NoResultFound:
             return None
 
+    
+class GenusManager(GetByNameManager):
+    dbmodel = Genus
+
 class SpecNameManager(BaseManager):
     dbmodel = SpecName
 
 class VTSpeciesManager(BaseManager):
     dbmodel = VTSpecies
+
+class WikiPageManager(GetByNameManager):
+    dbmodel = WikiPage
+    
