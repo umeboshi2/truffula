@@ -67,6 +67,11 @@ class Genus(Base, SerialBase):
     id = Column(Integer, primary_key=True)
     name = Column(Unicode, unique=True)
 
+class GenusWiki(Base, SerialBase):
+    __tablename__ = 'genus_wikipages'
+    id = Column(Integer, ForeignKey('genus_list.id'), primary_key=True)
+    content = Column(Unicode)
+
 class SpecName(Base, SerialBase):
     __tablename__ = 'species_list'
     id = Column(Integer, primary_key=True)
@@ -117,6 +122,8 @@ class VTPicture(Base, SerialBase):
 
 #VTSpecies.like = relationship('vt_looks_likes.spec_id')
 from sqlalchemy.orm.collections import attribute_mapped_collection
+
+Genus.wiki = relationship(GenusWiki, uselist=False)
 
 VTSpecies.pictures = relationship(
     VTPicture,

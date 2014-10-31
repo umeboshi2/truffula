@@ -64,6 +64,17 @@ WIKIPEDIA_MISSING_SPECIES = dict(
 WIKIPEDIA_NO_GENUS = ['diplacus', 'pyrularia', 'buckleya',
                       'pinckneya', 'xcupressocyparis']
 
+def cleanup_wiki_page(content):
+    soup = BeautifulSoup(content)
+    for cid in ['siteSub', 'contentSub', 'jump-to-nav', 'firstHeading',
+                'mw-navigation', 'nw-hidden-catlinks']:
+        selector = '#%s' % cid
+        elements = soup.select(selector)
+        while len(elements):
+            element = elements.pop()
+            element.clear()
+    return soup
+    
 class WikiCollector(BaseCollector):
     def __init__(self, cachedir='data'):
         super(WikiCollector, self).__init__()

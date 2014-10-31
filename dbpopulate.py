@@ -16,10 +16,10 @@ from truffula.scrapers.vtdendro import VTDendroCollector, TREEINFO_KEYS
 
 from truffula.scrapers.wikipedia import get_wikipedia_pages_for_vt
 from truffula.scrapers.wikipedia import get_wikipedia_pages_for_silvics
-from truffula.scrapers.wikipedia import WikiCollector
+from truffula.scrapers.wikipedia import WikiCollector, cleanup_wiki_page
 
 from truffula.database import Base, URI
-from truffula.database import Genus, SpecName
+from truffula.database import Genus, GenusWiki, SpecName
 from truffula.database import Species, VTSpecies
 from truffula.database import VTLooksLike, VTPicture
 
@@ -34,22 +34,49 @@ Session.configure(bind=engine)
 
 s = Session()
 
-vc = VTDendroCollector()
-vc.add_trees()
+wiki_collector = WikiCollector()
+vctrees_filename = 'vctrees.pickle'
+if os.path.isfile(vctrees_filename):
+    print "Loading from %s" % vctrees_filename
+    vctrees = Pickle.load(file(vctrees_filename))
+else:
+    vc = VTDendroCollector()
+    vc.add_trees()
+    for genus in vc.trees:
+        for spec in vc.trees[genus]:
+            for key in ['info', 'soup']:
+                if key in vc.trees[genus][spec]:
+                    del vc.trees[genus][spec][key]
+    with file(vctrees_filename, 'w') as outfile:
+        Pickle.dump(vc.trees, outfile)
+    vctrees = vc.trees
 
 # populate with VTDendroCollector
-genus_list = vc.trees.keys()
+genus_list = vctrees.keys()
 genus_list.sort()
+
 for genus in genus_list:
     q = s.query(Genus).filter_by(name=genus).all()
     if not len(q):
         g = Genus()
         g.name = genus
         s.add(g)
+        g = s.merge(g)
+        gw = GenusWiki()
+        gw.id = g.id
+        try:
+            wpage = wiki_collector.get_genus_page(genus)
+        except HTTPError, e:
+            wpage = None
+        if wpage is not None:
+            soup = cleanup_wiki_page(wpage['content'])
+            gw.content = unicode(soup.body)
+        s.add(gw)
+        
         #s.commit()
         
 for genus in genus_list:
-    for species in vc.trees[genus]:
+    for species in vctrees[genus]:
         if species in ['spp.']:
             continue
         q = s.query(SpecName).filter_by(name=species).all()
@@ -62,11 +89,11 @@ for genus in genus_list:
             print "Species %s already present." % species
             
 
-for genus in vc.trees:
-    for species in vc.trees[genus]:
+for genus in vctrees:
+    for species in vctrees[genus]:
         if species in ['spp.']:
             continue
-        data = vc.trees[genus][species]
+        data = vctrees[genus][species]
         sp = s.query(VTSpecies).get(data['id'])
         if sp is None:
             print data['treeinfo']
@@ -103,21 +130,13 @@ for genus in vc.trees:
                     print "px.type", px.type, px.url
             #import pdb ; pdb.set_trace()
             sp.data = data
-            collector = WikiCollector()
             try:
-                wpage = collector.get_page(genus, species)
+                wpage = wiki_collector.get_page(genus, species)
             except HTTPError, e:
                 wpage = None
             #print "WPAGE IS", wpage
             if wpage is not None:
-                soup = BeautifulSoup(wpage['content'])
-                for cid in ['siteSub', 'contentSub', 'jump-to-nav',
-                            'firstHeading', 'mw-navigation', 'mw-hidden-catlinks']:
-                    selector = '#%s' % cid
-                    elements = soup.select(selector)
-                    while len(elements):
-                        element = elements.pop()
-                        element.clear()
+                soup = cleanup_wiki_page(wpage['content'])
                 sp.wikipage = unicode(soup.body)
             s.add(sp)
             #s.commit()

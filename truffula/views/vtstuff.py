@@ -38,10 +38,22 @@ class GenusView(BaseResource):
     def __init__(self, request):
         super(GenusView, self).__init__(request)
         self.mgr = GenusManager(self.db)
-        #self.limit = 25
+        self.limit = 25
         
     def collection_query(self):
         return self.mgr.query()
+
+    def serialize_object(self, dbobj):
+        data = dict()
+        for field in ['id', 'name']:
+            data[field] = getattr(dbobj, field)
+        data['wikipage'] = dbobj.wiki.content
+        return data
+
+    def get(self):
+        name = self.request.matchdict['name']
+        g = self.mgr.get_by_name(name)
+        return self.serialize_object(g)
         
 
 @resource(collection_path=specname_path,
@@ -65,10 +77,16 @@ class VTSpeciesView(BaseResource):
         self.limit = 25
         self.genus_mgr = GenusManager(self.db)
         self.wikicollector = WikiCollector()
+
+    def serialize_object_for_collection_query(self, dbobj):
+        data = dict()
+        for field in ['id', 'genus_id', 'spec_id', 'cname', 'symbol']:
+            data[field] = getattr(dbobj, field)
+        data['genus'] = dbobj.genus.name
+        data['species'] = dbobj.species.name
+        return data
         
     def serialize_object(self, dbobj):
-        #import pdb ; pdb.set_trace()
-        
         data = dict()
         for field in ['id', 'genus_id', 'spec_id', 'cname', 'symbol',
                       'flower', 'leaf', 'form', 'fruit', 'bark', 'twig']:
