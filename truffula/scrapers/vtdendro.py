@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 
 from .basecollector import BaseCollector
 from .cachecollector import BaseCacheCollector
+from .util import download_pictures
 
 
 url_prefix = 'http://dendro.cnre.vt.edu/dendrology/'
@@ -18,40 +19,8 @@ toc_url = 'http://dendro.cnre.vt.edu/dendrology/data_results_with_common.cfm'
 TREEINFO_KEYS = ['flower', 'leaf', 'form', 'fruit', 'bark', 'twig']
 PICTURE_KEYS = TREEINFO_KEYS + ['map']
 
-
-def chunks(l, n):
-    """ Yield successive n-sized chunks from l.
-    """
-    for i in xrange(0, len(l), n):
-        yield l[i:i+n]
-
-def download_picture(ptuple):
-    url, filename = ptuple
-    if not os.path.isfile(filename):
-        print "Downloading", filename
-        dirname = os.path.dirname(filename)
-        if not os.path.isdir(dirname):
-            os.makedirs(dirname)
-        r = requests.get(url)
-        if r.ok:
-            with file(filename, 'w') as outfile:
-                outfile.write(r.content)
-
-def download_pictures(paramlist, chunksize=20, processes=5):
-    grouped = chunks(paramlist, chunksize)
-    pool = ThreadPool(processes=processes)
-    count = 0
-    total = len(paramlist) / chunksize
-    if len(paramlist) % chunksize:
-        total += 1
-    for group in grouped:
-        output = pool.map(download_picture, group)
-        count += 1
-        print "Group %d of %d processed." % (count, total)
-        
-
 class VTDendroCollector(BaseCollector):
-    def __init__(self, cachedir='data', pictdir='images'):
+    def __init__(self, cachedir='data', pictdir='images/vtdendro'):
         super(VTDendroCollector, self).__init__()
         self.cache = BaseCacheCollector(cachedir=cachedir)
         self.set_url(toc_url)
