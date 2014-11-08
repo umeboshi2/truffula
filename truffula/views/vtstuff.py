@@ -97,8 +97,10 @@ class VTSpeciesView(BaseResource):
         for key, pobj in dbobj.pictures.items():
             value = pobj.serialize()
             ipath = value['url'].split(url_prefix)[1].replace('%20', '_')
+            ipath = ipath.split('images/')[1]
+            ipath = os.path.join('vtimages', 'vtdendro', ipath)
             base = self.request.route_url('home')
-            value['localurl'] = '%svt%s' % (base, ipath)
+            value['localurl'] = os.path.join(base, ipath)
             data['pictures'][key] = value
         data['looklikes'] = [dict(id=l.id, cname=l.cname) for l in dbobj.looklikes]
         data['wikipage'] = dbobj.wikipage
