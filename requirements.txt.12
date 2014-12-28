@@ -13,7 +13,6 @@ beautifulsoup4==4.3.2
 cornice==0.17
 decorator==3.4.0
 icalendar==3.8.3
-lxml==3.4.0
 mechanize==0.2.5
 psycopg2==2.5.4
 pyparsing==2.0.3
@@ -30,7 +29,8 @@ simplejson==3.6.4
 six==1.8.0
 transaction==1.4.3
 translationstring==1.1
--e git+git@github.com:umeboshi2/trumpet.git@bf0113255e7006f0b033db0275d44b1d751c552e#egg=trumpet-master
+-e git+git@github.com:umeboshi2/truffula.git@90ca92da1439264c2f92aa0b77189e60b978d8be#egg=truffula-master
+-e git+git@github.com:umeboshi2/trumpet.git@141fba80cb134ab8f85f755e55a621874791590f#egg=trumpet-master
 validators==0.7
 venusian==1.0
 vobject==0.8.1c
