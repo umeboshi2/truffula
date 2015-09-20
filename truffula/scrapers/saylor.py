@@ -66,8 +66,8 @@ class SaylorIndexCollector(BaseCollector):
             data = self.cache.get(self.url)
         # FIXME: find a better way than this
         sys.setrecursionlimit(9500)
-        self.soup = BeautifulSoup(data['content'])
-        data['soup'] = BeautifulSoup(data['content'])
+        self.soup = self._make_soup(data['content'])
+        data['soup'] = self._make_soup(data['content'])
         return data
 
     def get_plant_anchors(self):
@@ -88,7 +88,7 @@ class SaylorIndexCollector(BaseCollector):
             self.pagecollector.retrieve_page(url)
             self.cache.save(url, self.pagecollector)
             page = self.cache.get(url)
-        soup = BeautifulSoup(page['content'])
+        soup = self._make_soup(page['content'])
         page['soup'] = soup
         return page
 

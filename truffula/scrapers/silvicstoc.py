@@ -34,8 +34,8 @@ class SilvicsToCCollector(BaseCollector):
             self.retrieve_page()
             self.cache.save(self.url, self)
             data = self.cache.get(self.url)
-        self.soup = BeautifulSoup(data['content'])
-        data['soup'] = BeautifulSoup(data['content'])
+        self.soup = self._make_soup(data['content'])
+        data['soup'] = self._make_soup(data['content'])
         return data
         
     def get_link_info(self):

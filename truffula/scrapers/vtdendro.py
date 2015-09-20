@@ -75,8 +75,8 @@ class VTDendroCollector(BaseCollector):
             data = self.cache.get(self.url)
         # FIXME: find a better way than this
         sys.setrecursionlimit(9500)
-        self.soup = BeautifulSoup(data['content'])
-        data['soup'] = BeautifulSoup(data['content'])
+        self.soup = self._make_soup(data['content'])
+        data['soup'] = self._make_soup(data['content'])
         return data
         
     def get_tree_anchors(self):
@@ -146,8 +146,8 @@ class VTDendroCollector(BaseCollector):
             self.pagecollector.retrieve_page(url)
             self.cache.save(url, self.pagecollector)
             page = self.cache.get(url)
-        #page['soup'] = BeautifulSoup(page['content'])
-        soup = BeautifulSoup(page['content'])
+        #page['soup'] = self._make_soup(page['content'])
+        soup = self._make_soup(page['content'])
         page['soup'] = soup
         page['treeinfo'] = self._get_tree_info_from_page(soup)
         page['id'] = int(url.split('ID=')[1])

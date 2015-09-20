@@ -62,7 +62,8 @@ WIKIPEDIA_MISSING_SPECIES = dict(
     )
 
 WIKIPEDIA_NO_GENUS = ['diplacus', 'pyrularia', 'buckleya',
-                      'pinckneya', 'xcupressocyparis']
+                      'pinckneya', 'xcupressocyparis',
+                      'xhesperotropsis']
 def clear_elements(soup, selector):
     elements = soup.select(selector)
     while len(elements):
@@ -71,7 +72,7 @@ def clear_elements(soup, selector):
         
 
 def cleanup_wiki_page(content):
-    soup = BeautifulSoup(content)
+    soup = BeautifulSoup(content, 'lxml')
     for cid in ['siteSub', 'contentSub', 'jump-to-nav', 'firstHeading',
                 'mw-navigation', 'mw-hidden-catlinks', 'footer-places',
                 'footer-icons']:
@@ -156,6 +157,11 @@ def get_wikipedia_pages_for_vt(treedata):
             if genus == 'heptacodium' and species == 'miconoides':
                 species = 'miconioides'
                 print "%s %s on wikipedia." % (genus.capitalize(), species)
+            if genus == 'platanus' and species == 'xhispanica':
+                species = 'hispanica'
+            if genus == 'xhesperotropsis' and species == 'leylandii':
+                genus = 'Leyland'
+                species = 'cypress'
             wc.get_page(genus, species)
             
             
